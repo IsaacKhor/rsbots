@@ -22,10 +22,43 @@ client = commands.Bot(command_prefix='.')
 @client.listen('on_ready')
 async def on_ready():
     print(f'Logged is as {client.user}')
-    client.loop.create_task(notify_tms())
-    client.loop.create_task(notify_wax())
-    client.loop.create_task(notify_yews())
-    client.loop.create_task(notify_goebiebands())
+
+    client.loop.create_task(create_specific_time_notif(
+        name='Travelling Merchant',
+        times=[time(hour=0, minute=10)],
+        channel=CHANNEL_NOTIFY,
+        msgfn=get_tms_message
+    ))
+
+    client.loop.create_task(create_specific_time_notif(
+        name='Vis wax',
+        times=[time(hour=0, minute=15)],
+        channel=CHANNEL_NOTIFY,
+        msgfn=lambda: f'<@&{ROLE_VIS_WAX}> runes for today posted above (or below if the vis wax fc got delayed).'
+    ))
+
+
+    client.loop.create_task(create_specific_time_notif(
+        name='Reset yews',
+        times=[time(hour=23, minute=45)],
+        channel=CHANNEL_NOTIFY,
+        msgfn=lambda: f'<@&{ROLE_YEWS}> yews starting on world 48.'
+    ))
+
+    client.loop.create_task(create_specific_time_notif(
+        name='140 yews',
+        times=[time(hour=17, minute=45)],
+        channel=CHANNEL_NOTIFY,
+        msgfn=lambda: f'<@&{ROLE_YEWS}> yews starting on world 140.'
+    ))
+
+    client.loop.create_task(create_specific_time_notif(
+        name='Goebiebands',
+        times=[time(hour=11, minute=45), time(hour=23, minute=45)],
+        channel=CHANNEL_NOTIFY,
+        msgfn=lambda: f'<@&{ROLE_GOEBIEBANDS}> starting in 15 minutes.'
+    ))
+
 
 # Why we use asyncio sleeps instead of cron
 # This is intended to be a drop-in bot that you can clone and run
@@ -56,60 +89,36 @@ async def send_to_channel(id, msg):
     await client.get_channel(id).send(msg)
 
 
-def get_tms_stock():
+def create_specific_time_notif(name, times, channel, msgfn):
+    """
+    Params:
+    - times: list of `datetime.time` objects that will determine when
+      the message will go out
+    - channel: which channel to send the message
+    - msgfn: message to call with time of day for the ping message
+    """
+    async def notiffn():
+        mindelta = 60 * 60 * 24
+        for t in times:
+            s = secs_until_next(t)
+            mindelta = min(mindelta, s)
+        print(f'Notifying about {name} in {mindelta/60/60:5} hours')
+        await asyncio.sleep(delay=mindelta)
+
+        msg = msgfn()
+        await send_to_channel(channel, msg)
+
+    return notiffn()
+
+
+def get_tms_message():
     # Can switch to aiohttp if needed
     TMS_PARAMS = {'lang': 'en'}
     TMS_HEADERS = {'user-agent': USER_AGENT}
     r = requests.get(TMS_ENDPOINT, params=TMS_PARAMS, headers=TMS_HEADERS)
-    return r.json()
-
-
-async def notify_tms():
-    while not client.is_closed():
-        delta = secs_until_next(time(hour=0, minute=10))
-        print(f'TMS notification in {delta/60/60} hours')
-        await asyncio.sleep(delay=delta)
-
-        stock = get_tms_stock()
-        stock_msg = ', '.join(stock[1:])
-
-        await send_to_channel(CHANNEL_NOTIFY, 
-            f"<@&{ROLE_TMS}> Merch stock today: {stock_msg}")
-
-
-async def notify_wax():
-    while not client.is_closed():
-        delta = secs_until_next(time(hour=0, minute=15))
-        print(f'Vis wax notification in {delta/60/60} hours')
-        await asyncio.sleep(delay=delta)
-
-        await send_to_channel(CHANNEL_NOTIFY, 
-            f"<@&{ROLE_VIS_WAX}> runes for today posted above.")
-
-
-async def notify_yews():
-    while not client.is_closed():
-        yews_reset = secs_until_next(time(hour=23, minute=45))
-        yews_1750 = secs_until_next(time(hour=17, minute=45))
-        delta = min(yews_1750, yews_reset)
-        print(f'Yews notification in {delta/60/60} hours')
-        await asyncio.sleep(delay=delta)
-
-        await send_to_channel(CHANNEL_NOTIFY, 
-            f"<@&{ROLE_YEWS}> Daily yews starting now.")
-
-
-async def notify_goebiebands():
-    while not client.is_closed():
-        wave1 = secs_until_next(time(hour=23, minute=50))
-        wave2 = secs_until_next(time(hour=11, minute=50))
-        delta = min(wave1, wave2)
-        print(f'Goebiebands notification in {delta/3600} hours')
-        await asyncio.sleep(delta)
-
-        await send_to_channel(CHANNEL_NOTIFY,
-            f'<@&{ROLE_GOEBIEBANDS}> Goebiebands in 10 minutes.')
-        pass
+    j = r.json()
+    stock = ', '.join(j[1:])
+    return f'<@&{ROLE_TMS}> stock today: {stock}'
 
 
 import sys
