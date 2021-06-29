@@ -89,26 +89,26 @@ async def notify_wax():
 
 async def notify_yews():
     while not client.is_closed():
-        yews_reset = secs_until_next(time(hour=0, minute=0))
-        yews_1750 = secs_until_next(time(hour=17, minute=50))
+        yews_reset = secs_until_next(time(hour=23, minute=45))
+        yews_1750 = secs_until_next(time(hour=17, minute=45))
         delta = min(yews_1750, yews_reset)
         print(f'Yews notification in {delta/60/60} hours')
         await asyncio.sleep(delay=delta)
 
         await send_to_channel(CHANNEL_NOTIFY, 
-            f"<@&{ROLE_YEWS}> happening now.")
+            f"<@&{ROLE_YEWS}> Daily yews starting now.")
 
 
 async def notify_goebiebands():
     while not client.is_closed():
-        wave1 = secs_until_next(time(hour=0, minute=0))
-        wave2 = secs_until_next(time(hour=12, minute=0))
+        wave1 = secs_until_next(time(hour=23, minute=50))
+        wave2 = secs_until_next(time(hour=11, minute=50))
         delta = min(wave1, wave2)
         print(f'Goebiebands notification in {delta/3600} hours')
         await asyncio.sleep(delta)
 
         await send_to_channel(CHANNEL_NOTIFY,
-            f'<@&{ROLE_GOEBIEBANDS}> Gobiebands wave now.')
+            f'<@&{ROLE_GOEBIEBANDS}> Goebiebands in 10 minutes.')
         pass
 
 
