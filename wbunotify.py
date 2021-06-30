@@ -25,7 +25,7 @@ async def on_ready():
 
     client.loop.create_task(create_specific_time_notif(
         name='Travelling Merchant',
-        times=[time(hour=0, minute=5)],
+        times=[time(hour=0, minute=3)],
         channel=CHANNEL_NOTIFY,
         msgfn=get_tms_message
     ))
