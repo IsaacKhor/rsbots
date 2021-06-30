@@ -25,18 +25,17 @@ async def on_ready():
 
     client.loop.create_task(create_specific_time_notif(
         name='Travelling Merchant',
-        times=[time(hour=0, minute=10)],
+        times=[time(hour=0, minute=5)],
         channel=CHANNEL_NOTIFY,
         msgfn=get_tms_message
     ))
 
     client.loop.create_task(create_specific_time_notif(
         name='Vis wax',
-        times=[time(hour=0, minute=15)],
+        times=[time(hour=0, minute=10)],
         channel=CHANNEL_NOTIFY,
         msgfn=lambda: f'<@&{ROLE_VIS_WAX}> runes for today posted above (or below if the vis wax fc got delayed).'
     ))
-
 
     client.loop.create_task(create_specific_time_notif(
         name='Reset yews',
