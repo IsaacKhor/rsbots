@@ -4,8 +4,7 @@ from datetime import datetime, time, timedelta, timezone
 import discord, requests, asyncio
 from discord.ext import commands
 
-CHANNEL_NOTIFY = 318793375136481280
-CHANNEL_BOT_LOG = 804209525585608734
+CHANNEL_NOTIFY = 842527669085667408
 
 ROLE_CHAD = 856529519186673694
 
