@@ -57,6 +57,11 @@ async def on_ready():
     ))
 
 
+@client.event
+async def on_message(msg):
+    pass
+
+
 # Why we use asyncio sleeps instead of cron
 # This is intended to be a drop-in bot that you can clone and run
 # after changing the constants up top, so I don't want to add addiniotaly
