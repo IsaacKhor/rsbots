@@ -2,7 +2,6 @@
 
 from datetime import datetime, time, timedelta, timezone
 import discord, requests, asyncio
-from discord.ext import commands
 
 CHANNEL_NOTIFY = 842527669085667408
 
@@ -16,9 +15,9 @@ ROLE_GOEBIEBANDS = 483236107396317195
 USER_AGENT = 'wbu_notify_bot'
 TMS_ENDPOINT = 'https://api.weirdgloop.org/runescape/tms/current'
 
-client = commands.Bot(command_prefix='.')
+client = discord.Client()
 
-@client.listen('on_ready')
+@client.event
 async def on_ready():
     print(f'Logged is as {client.user}')
 
@@ -96,15 +95,16 @@ def create_specific_time_notif(name, times, channel, msgfn):
     - msgfn: message to call with time of day for the ping message
     """
     async def notiffn():
-        mindelta = 60 * 60 * 24
-        for t in times:
-            s = secs_until_next(t)
-            mindelta = min(mindelta, s)
-        print(f'Notifying about {name} in {mindelta/60/60:5} hours')
-        await asyncio.sleep(delay=mindelta)
+        while not client.is_closed():
+            mindelta = 60 * 60 * 24
+            for t in times:
+                s = secs_until_next(t)
+                mindelta = min(mindelta, s)
+            print(f'Notifying about {name} in {mindelta/60/60:5} hours')
+            await asyncio.sleep(delay=mindelta)
 
-        msg = msgfn()
-        await send_to_channel(channel, msg)
+            msg = msgfn()
+            await send_to_channel(channel, msg)
 
     return notiffn()
 
