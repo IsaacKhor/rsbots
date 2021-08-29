@@ -110,12 +110,37 @@ def process_txt(txt):
 		return f'Invalid command: "{txt}". Please double check your spelling.'
 
 
+def split2k(s: str):
+	"""
+	Splits message into 2k chunks at newline boundaries
+	Becomes sad if each line is >2k long
+	"""
+	lines = s.split('\n')
+	retlist = []
+	curline = ''
+	for l in lines:
+		if len(l) > 1990:
+			print('Line > 2k long, idk what to do')
+			return [s]
+		if len(curline) + len(l) < 1990:
+			curline += l
+		else:
+			retlist.append(curline)
+			curline = ''
+	return retlist
+
+
 @client.listen('on_message')
 async def process_msg(msg):
 	if msg.channel.id == MESSAGE_CHANNEL:
 		txt = msg.content.strip().lower()
 		ret = process_txt(txt)
-		await msg.author.send(ret)
+
+		# Handle >2k length cases
+		lines = split2k(ret)
+
+		for l in lines:
+			await msg.author.send(l)
 		await msg.delete()
 
 		if any(r in EDIT_ROLES for r in msg.author.roles):
