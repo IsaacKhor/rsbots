@@ -119,11 +119,12 @@ def split2k(s: str):
 	retlist = []
 	curline = ''
 	for l in lines:
-		if len(l) > 1990:
+		if len(l) > 1600:
 			print('Line > 2k long, idk what to do')
 			return [s]
-		if len(curline) + len(l) < 1990:
+		if len(curline) + len(l) < 1600:
 			curline += l
+			curline += '\n'
 		else:
 			retlist.append(curline)
 			curline = ''
