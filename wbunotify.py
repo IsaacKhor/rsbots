@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
-from datetime import datetime, time, timedelta, timezone
-import discord, requests, asyncio
+from datetime import datetime, time, timedelta
+import discord, requests, asyncio, os
+
+DEBUG = 'WORLDBOT_DEBUG' in os.environ
 
 CHANNEL_NOTIFY = 842527669085667408
 
@@ -12,8 +14,12 @@ ROLE_TMS = 676760858868711436
 ROLE_YEWS = 859158679713742889
 ROLE_GOEBIEBANDS = 483236107396317195
 
-USER_AGENT = 'wbu_notify_bot'
+USER_AGENT = 'wbu_notify_bot (contact@unknownpriors.com or @unknownpriors#9144)'
 TMS_ENDPOINT = 'https://api.weirdgloop.org/runescape/tms/current'
+
+def debug(msg):
+    if DEBUG:
+        print('[DEBUG]: ' + msg)
 
 client = discord.Client()
 
@@ -30,9 +36,9 @@ async def on_ready():
 
     client.loop.create_task(create_specific_time_notif(
         name='Vis wax',
-        times=[time(hour=0, minute=10)],
+        times=[time(hour=0, minute=15)],
         channel=CHANNEL_NOTIFY,
-        msgfn=lambda: f'<@&{ROLE_VIS_WAX}> runes for today posted above (or below if the vis wax fc got delayed).'
+        msgfn=lambda: f'<@&{ROLE_VIS_WAX}> runes for today posted (or will be soon if the vis wax fc got delayed).'
     ))
 
     client.loop.create_task(create_specific_time_notif(
@@ -44,17 +50,27 @@ async def on_ready():
 
     client.loop.create_task(create_specific_time_notif(
         name='140 yews',
-        times=[time(hour=17, minute=45)],
+        times=[time(hour=17, minute=40)],
         channel=CHANNEL_NOTIFY,
         msgfn=lambda: f'<@&{ROLE_YEWS}> yews starting on world 140.'
     ))
 
     client.loop.create_task(create_specific_time_notif(
         name='Goebiebands',
-        times=[time(hour=11, minute=45), time(hour=23, minute=45)],
+        times=[time(hour=11, minute=45)],
         channel=CHANNEL_NOTIFY,
         msgfn=lambda: f'<@&{ROLE_GOEBIEBANDS}> starting in 15 minutes.'
     ))
+
+    # I can't figure out why it isn't doing it twice, so use the lazy solution
+    client.loop.create_task(create_specific_time_notif(
+        name='Goebiebands',
+        times=[time(hour=23, minute=45)],
+        channel=CHANNEL_NOTIFY,
+        msgfn=lambda: f'<@&{ROLE_GOEBIEBANDS}> starting in 15 minutes.'
+    ))
+
+
 
 
 @client.event
@@ -102,8 +118,10 @@ def create_specific_time_notif(name, times, channel, msgfn):
     async def notiffn():
         while not client.is_closed():
             mindelta = 60 * 60 * 24
+            debug(f'Searching minimum time for {name}')
             for t in times:
                 s = secs_until_next(t)
+                debug(f'{s} secs to {t}')
                 mindelta = min(mindelta, s)
             print(f'Notifying about {name} in {mindelta/60/60:5} hours')
             await asyncio.sleep(delay=mindelta)
