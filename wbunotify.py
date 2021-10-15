@@ -56,7 +56,7 @@ async def on_ready():
     ))
 
     client.loop.create_task(create_specific_time_notif(
-        name='Goebiebands',
+        name='Goebiebands noon',
         times=[time(hour=11, minute=45)],
         channel=CHANNEL_NOTIFY,
         msgfn=lambda: f'<@&{ROLE_GOEBIEBANDS}> starting in 15 minutes.'
@@ -64,13 +64,11 @@ async def on_ready():
 
     # I can't figure out why it isn't doing it twice, so use the lazy solution
     client.loop.create_task(create_specific_time_notif(
-        name='Goebiebands',
+        name='Goebiebands reset',
         times=[time(hour=23, minute=45)],
         channel=CHANNEL_NOTIFY,
         msgfn=lambda: f'<@&{ROLE_GOEBIEBANDS}> starting in 15 minutes.'
     ))
-
-
 
 
 @client.event
